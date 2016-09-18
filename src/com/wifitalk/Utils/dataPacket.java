@@ -2,9 +2,11 @@ package com.wifitalk.Utils;
 //www.javaapk.com
 public class dataPacket
 {
-	public static int head = 30;// 头信息大小
-	public static int body = 640;// 语音包大小
-	private byte[] recordBytes = new byte[head + body];
+	public static final int RECOMMEND_SIZE = 320; 
+	public static final int HEAD_LENGTH = 30;
+	public static final int BODY_LENGTH = RECOMMEND_SIZE - HEAD_LENGTH;
+	
+	private byte[] recordBytes = new byte[HEAD_LENGTH + BODY_LENGTH];
 
 	public dataPacket(byte[] headInfo, byte[] bodyBytes)
 	{
@@ -14,13 +16,13 @@ public class dataPacket
 		}
 		for (int i = 0; i < bodyBytes.length; i++)
 		{
-			recordBytes[i + 30] = bodyBytes[i];
+			recordBytes[i + HEAD_LENGTH] = bodyBytes[i];
 		}
 	}
 
 	public byte[] getHeadInfo()
 	{
-		byte[] head = new byte[30];
+		byte[] head = new byte[HEAD_LENGTH];
 		for (int i = 0; i < head.length; i++)
 		{
 			head[i] = recordBytes[i];
@@ -30,17 +32,17 @@ public class dataPacket
 
 	public byte[] getBody()
 	{
-		byte[] body = new byte[640];
+		byte[] body = new byte[BODY_LENGTH];
 		for (int i = 0; i < body.length; i++)
 		{
-			body[i] = recordBytes[i + 30];
+			body[i] = recordBytes[i + HEAD_LENGTH];
 		}
 		return body;
 	}
 
 	public byte[] getAllData()
 	{
-		byte[] data = new byte[head + body];
+		byte[] data = new byte[HEAD_LENGTH + BODY_LENGTH];
 		for (int i = 0; i < data.length; i++)
 		{
 			data[i] = recordBytes[i];

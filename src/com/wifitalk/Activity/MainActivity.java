@@ -6,12 +6,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
 import com.wifitalk.R;
 import com.wifitalk.Config.AppConfig;
 import com.wifitalk.Utils.AECUtil;
 import com.wifitalk.Utils.dataPacket;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.media.AudioFormat;
@@ -29,7 +27,7 @@ import android.widget.TextView;
 @SuppressLint("ClickableViewAccessibility")
 public class MainActivity extends Activity
 {
-	private static final int RECOMMEND_SIZE = 320; 
+	
 	
 	private Button speakButton;// 按住说话
 	private TextView message;
@@ -82,7 +80,7 @@ public class MainActivity extends Activity
 	{
 		private AudioRecord recorder = null;
 		private boolean isRunning = false;
-		private byte[] recordBytes = new byte[RECOMMEND_SIZE];
+		private byte[] recordBytes = new byte[dataPacket.BODY_LENGTH];
 
 		public SendSoundsThread()
 		{
@@ -136,7 +134,7 @@ public class MainActivity extends Activity
 					catch (IOException e)
 					{
 						e.printStackTrace();
-					}
+					} 
 				}
 			}
 		}
@@ -180,8 +178,8 @@ public class MainActivity extends Activity
 
 						byte[] data = receivePacket.getData();
 
-						byte[] head = new byte[30];
-						byte[] body = new byte[640];
+						byte[] head = new byte[dataPacket.HEAD_LENGTH];
+						byte[] body = new byte[dataPacket.BODY_LENGTH];
 
 						// 获得包头
 						for (int i = 0; i < head.length; i++)
@@ -192,7 +190,7 @@ public class MainActivity extends Activity
 						// 获得包体
 						for (int i = 0; i < body.length; i++)
 						{
-							body[i] = data[i + 30];
+							body[i] = data[i + dataPacket.HEAD_LENGTH];
 						}
 
 						// 获得头信息 通过头信息判断是否是自己发出的语音
