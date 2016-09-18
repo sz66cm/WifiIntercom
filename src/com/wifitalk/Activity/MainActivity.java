@@ -7,12 +7,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import org.apache.http.conn.util.InetAddressUtils;
-
 import com.wifitalk.R;
 import com.wifitalk.Config.AppConfig;
-import com.wifitalk.Utils.NetDealUtil;
-import com.wifitalk.Utils.NetWorkInfoUtil;
+import com.wifitalk.Utils.AECUtil;
 import com.wifitalk.Utils.dataPacket;
 
 import android.annotation.SuppressLint;
@@ -22,8 +19,6 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,6 +29,8 @@ import android.widget.TextView;
 @SuppressLint("ClickableViewAccessibility")
 public class MainActivity extends Activity
 {
+	private static final int RECOMMEND_SIZE = 320; 
+	
 	private Button speakButton;// 按住说话
 	private TextView message;
 	private SendSoundsThread sendSoundsThread = new SendSoundsThread();
@@ -85,7 +82,7 @@ public class MainActivity extends Activity
 	{
 		private AudioRecord recorder = null;
 		private boolean isRunning = false;
-		private byte[] recordBytes = new byte[640];
+		private byte[] recordBytes = new byte[RECOMMEND_SIZE];
 
 		public SendSoundsThread()
 		{
@@ -98,12 +95,13 @@ public class MainActivity extends Activity
 					AudioFormat.ENCODING_PCM_16BIT, recordBufferSize);
 		}
 
+		@SuppressLint("NewApi")
 		@Override
 		public synchronized void run()
 		{
 			super.run();
 			recorder.startRecording();
-
+			AECUtil.aec(recorder);
 			while (true)
 			{
 				if (isRunning)
@@ -111,9 +109,7 @@ public class MainActivity extends Activity
 					try
 					{
 						DatagramSocket clientSocket = new DatagramSocket();
-						DhcpInfo dhcpInfo = NetWorkInfoUtil.getDhcpInfo(MainActivity.this);
-						WifiInfo wifiInfo = NetWorkInfoUtil.getWifiInfo(MainActivity.this);
-						InetAddress IP = InetAddress.getByName(NetDealUtil.getBrocastAddress(wifiInfo,dhcpInfo));// 向这个网络广播
+						InetAddress IP = InetAddress.getByName("255.255.255.255");// 向这个网络广播
 						
 						// 获取音频数据
 						recorder.read(recordBytes, 0, recordBytes.length);
@@ -218,7 +214,7 @@ public class MainActivity extends Activity
 			catch (IOException e)
 			{
 				e.printStackTrace();
-			}
+			} 
 		}
 
 		public void setRunning(boolean isRunning)
@@ -231,6 +227,7 @@ public class MainActivity extends Activity
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		AECUtil.getInstance().release();
 		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 }
